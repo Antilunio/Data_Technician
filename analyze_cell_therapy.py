@@ -46,7 +46,8 @@ for interventions in df['Interventions']:
     types = extract_intervention_type(interventions)
     intervention_types.extend(types)
 
-intervention_counts = Counter(intervention_types)
+# Filter out single-letter artifacts and count
+intervention_counts = Counter([t for t in intervention_types if len(t) > 1])
 
 # Create comprehensive dashboard
 fig, axes = plt.subplots(3, 2, figsize=(18, 14))
