@@ -139,12 +139,66 @@ This analysis supports:
 - pandas (data manipulation)
 - matplotlib (visualization)
 - seaborn (statistical graphics)
+- Microsoft PowerAutomate and Excel for data capture
 
 **Analysis Features**:
 - Automated intervention type extraction
 - Sponsor categorization (industry/academic/hospital)
 - Condition frequency analysis
 - Multiple visualization outputs
+
+
+
+# 2025 Cell Therapy Clinical Trials Analysis
+
+Comprehensive analysis of completed cell therapy clinical trials from 2025, examining intervention types, sponsor landscape, and therapeutic focus areas.
+
+![Main Dashboard](cell_therapy_analysis_2025.png)
+
+
+# Antibody Services Analysis
+
+Commercial analytics for biotech products
+
+![Main Dashboard]
+
+## Data
+
+1,030 commercial quotes from reagents business
+- EMEA/AMER/APAC regions
+- Customer accounts, lead times, outcomes
+- Revenue and cost data
+
+## Analysis
+
+```bash
+python antibody_services_analysis.py
+```
+
+Generates:
+- Main dashboard (8 panels)
+- Regional breakdown
+- Summary CSV
+
+## Key Metrics
+
+- Total revenue: $3.1M
+- Avg lead time: 8.4 days
+- Avg response: 4.4 days
+- Top region: AMER (61%)
+- Top account: CUSTOMER (587 quotes)
+
+## Outputs
+
+- `antibody_services_dashboard.png` - Business metrics
+- `antibody_services_regional.png` - Regional analysis
+- `antibody_summary.csv` - Summary stats
+
+## Stack
+
+Python | pandas | matplotlib | seaborn
+
+
 
 ## Author
 
