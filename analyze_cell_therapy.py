@@ -1,222 +1,178 @@
-"""
-2025 Cell Therapy Clinical Trials Analysis
-Author: Antonio Marín
-Data Source: ClinicalTrials.gov
-"""
+# Cell Therapy Trials 2025 - Analysis
+# Antonio Marin
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from collections import Counter
-import re
 
-# Style
 sns.set_style("whitegrid")
 plt.rcParams['figure.figsize'] = (16, 12)
 
-print("=" * 70)
-print("2025 CELL THERAPY CLINICAL TRIALS ANALYSIS")
-print("=" * 70)
+print("="*70)
+print("2025 CELL THERAPY TRIALS ANALYSIS")
+print("="*70)
 
 # Load data
-df = pd.read_csv('2025_Cell_Therapy_Trials.csv')
-print(f"\n✓ Loaded {len(df)} completed trials from 2025")
-
-# Data overview
-print(f"\nColumns: {df.columns.tolist()}")
-print(f"\nStudy Types: {df['Study Type'].value_counts().to_dict()}")
+data = pd.read_csv('2025_Cell_Therapy_Trials.csv')
+print(f"\nLoaded {len(data)} trials")
 
 # Extract intervention types
-def extract_intervention_type(intervention_str):
-    """Extract intervention type from intervention string"""
-    if pd.isna(intervention_str):
-        return 'Not Specified'
-    
-    types = []
-    for intervention_type in ['DRUG', 'DEVICE', 'BIOLOGICAL', 'BEHAVIORAL', 'PROCEDURE', 
-                              'DIETARY_SUPPLEMENT', 'RADIATION', 'GENETIC', 'OTHER', 'DIAGNOSTIC_TEST']:
-        if intervention_type in intervention_str:
-            types.append(intervention_type)
-    
-    return types if types else ['Not Specified']
-
-# Apply extraction
 intervention_types = []
-for interventions in df['Interventions']:
-    types = extract_intervention_type(interventions)
-    intervention_types.extend(types)
+for intervention in data['Interventions']:
+    if pd.isna(intervention):
+        continue
+    
+    for int_type in ['DRUG', 'DEVICE', 'BIOLOGICAL', 'BEHAVIORAL', 'PROCEDURE', 
+                     'DIETARY_SUPPLEMENT', 'RADIATION', 'GENETIC', 'OTHER', 'DIAGNOSTIC_TEST']:
+        if int_type in intervention:
+            intervention_types.append(int_type)
 
-# Filter out single-letter artifacts and count
+# Filter single letters and count
 intervention_counts = Counter([t for t in intervention_types if len(t) > 1])
 
-# Create comprehensive dashboard
+# Main dashboard
 fig, axes = plt.subplots(3, 2, figsize=(18, 14))
 
-# 1. Study Type Distribution
-study_type_counts = df['Study Type'].value_counts()
-colors_study = ['#2E86AB', '#A23B72']
-axes[0, 0].pie(study_type_counts.values, labels=study_type_counts.index, 
-               autopct='%1.1f%%', colors=colors_study, startangle=90)
-axes[0, 0].set_title('Study Type Distribution', fontsize=14, fontweight='bold')
+# 1. Study type
+study_types = data['Study Type'].value_counts()
+axes[0, 0].pie(study_types.values, labels=study_types.index, 
+               autopct='%1.1f%%', colors=['#2E86AB', '#A23B72'], startangle=90)
+axes[0, 0].set_title('Study Type', fontsize=14, fontweight='bold')
 
-# 2. Intervention Types
+# 2. Intervention types
 top_interventions = dict(intervention_counts.most_common(10))
-axes[0, 1].barh(range(len(top_interventions)), list(top_interventions.values()), 
-                color='#F18F01')
+axes[0, 1].barh(range(len(top_interventions)), list(top_interventions.values()), color='#F18F01')
 axes[0, 1].set_yticks(range(len(top_interventions)))
 axes[0, 1].set_yticklabels(list(top_interventions.keys()))
-axes[0, 1].set_title('Top 10 Intervention Types', fontsize=14, fontweight='bold')
+axes[0, 1].set_title('Top Intervention Types', fontsize=14, fontweight='bold')
 axes[0, 1].set_xlabel('Number of Trials')
 axes[0, 1].invert_yaxis()
 axes[0, 1].grid(True, alpha=0.3, axis='x')
 
-# 3. Top Sponsors
-sponsor_counts = df['Sponsor'].value_counts().head(12)
-axes[1, 0].barh(range(len(sponsor_counts)), sponsor_counts.values, color='#006BA6')
-axes[1, 0].set_yticks(range(len(sponsor_counts)))
-axes[1, 0].set_yticklabels(sponsor_counts.index, fontsize=9)
-axes[1, 0].set_title('Top 12 Sponsors', fontsize=14, fontweight='bold')
+# 3. Top sponsors
+sponsors = data['Sponsor'].value_counts().head(12)
+axes[1, 0].barh(range(len(sponsors)), sponsors.values, color='#006BA6')
+axes[1, 0].set_yticks(range(len(sponsors)))
+axes[1, 0].set_yticklabels(sponsors.index, fontsize=9)
+axes[1, 0].set_title('Top Sponsors', fontsize=14, fontweight='bold')
 axes[1, 0].set_xlabel('Number of Trials')
 axes[1, 0].invert_yaxis()
 axes[1, 0].grid(True, alpha=0.3, axis='x')
 
-# 4. Top Conditions
-# Extract all conditions
-all_conditions = []
-for conditions in df['Conditions'].dropna():
-    cond_list = [c.strip() for c in conditions.split('|')]
-    all_conditions.extend(cond_list)
+# 4. Top conditions
+conditions = []
+for cond in data['Conditions'].dropna():
+    conditions.extend([c.strip() for c in cond.split('|')])
 
-condition_counts = Counter(all_conditions).most_common(15)
-cond_labels = [c[0] for c in condition_counts]
-cond_values = [c[1] for c in condition_counts]
+top_conditions = Counter(conditions).most_common(15)
+cond_names = [c[0] for c in top_conditions]
+cond_counts = [c[1] for c in top_conditions]
 
-axes[1, 1].barh(range(len(cond_labels)), cond_values, color='#C73E1D')
-axes[1, 1].set_yticks(range(len(cond_labels)))
-axes[1, 1].set_yticklabels(cond_labels, fontsize=8)
-axes[1, 1].set_title('Top 15 Conditions Studied', fontsize=14, fontweight='bold')
+axes[1, 1].barh(range(len(cond_names)), cond_counts, color='#C73E1D')
+axes[1, 1].set_yticks(range(len(cond_names)))
+axes[1, 1].set_yticklabels(cond_names, fontsize=8)
+axes[1, 1].set_title('Top Conditions', fontsize=14, fontweight='bold')
 axes[1, 1].set_xlabel('Number of Trials')
 axes[1, 1].invert_yaxis()
 axes[1, 1].grid(True, alpha=0.3, axis='x')
 
-# 5. Drug vs Non-Drug Interventions
-drug_trials = sum(1 for i in df['Interventions'] if pd.notna(i) and 'DRUG' in i)
-device_trials = sum(1 for i in df['Interventions'] if pd.notna(i) and 'DEVICE' in i)
-biological_trials = sum(1 for i in df['Interventions'] if pd.notna(i) and 'BIOLOGICAL' in i)
-other_trials = len(df) - drug_trials - device_trials - biological_trials
+# 5. Intervention categories
+drug_trials = sum(1 for i in data['Interventions'] if pd.notna(i) and 'DRUG' in i)
+device_trials = sum(1 for i in data['Interventions'] if pd.notna(i) and 'DEVICE' in i)
+biological_trials = sum(1 for i in data['Interventions'] if pd.notna(i) and 'BIOLOGICAL' in i)
+other_trials = len(data) - drug_trials - device_trials - biological_trials
 
-intervention_summary = {
-    'DRUG': drug_trials,
-    'DEVICE': device_trials,
-    'BIOLOGICAL': biological_trials,
-    'OTHER': other_trials
-}
+categories = {'DRUG': drug_trials, 'DEVICE': device_trials, 
+              'BIOLOGICAL': biological_trials, 'OTHER': other_trials}
 
-axes[2, 0].bar(intervention_summary.keys(), intervention_summary.values(), 
+axes[2, 0].bar(categories.keys(), categories.values(), 
                color=['#E63946', '#F18F01', '#06BA63', '#457B9D'])
-axes[2, 0].set_title('Primary Intervention Categories', fontsize=14, fontweight='bold')
+axes[2, 0].set_title('Intervention Categories', fontsize=14, fontweight='bold')
 axes[2, 0].set_ylabel('Number of Trials')
 axes[2, 0].grid(True, alpha=0.3, axis='y')
 
-# 6. Sponsor Types (Simple categorization)
-# Categorize sponsors as Industry, Academic, or Hospital
+# 6. Sponsor types
 def categorize_sponsor(sponsor):
     sponsor_lower = sponsor.lower()
     
-    # Industry keywords
     if any(word in sponsor_lower for word in ['inc', 'ltd', 'llc', 'corp', 'pharma', 
                                                 'bio', 'therapeutics', 'pharmaceuticals']):
         return 'Industry'
-    
-    # Academic keywords
     elif any(word in sponsor_lower for word in ['university', 'college', 'school', 
                                                   'research center']):
         return 'Academic'
-    
-    # Hospital keywords
     elif any(word in sponsor_lower for word in ['hospital', 'medical center', 
                                                   'clinic', 'healthcare']):
-        return 'Hospital/Clinical'
-    
+        return 'Hospital'
     else:
         return 'Other'
 
-df['Sponsor_Type'] = df['Sponsor'].apply(categorize_sponsor)
-sponsor_type_counts = df['Sponsor_Type'].value_counts()
+data['sponsor_type'] = data['Sponsor'].apply(categorize_sponsor)
+sponsor_types = data['sponsor_type'].value_counts()
 
-axes[2, 1].pie(sponsor_type_counts.values, labels=sponsor_type_counts.index, 
+axes[2, 1].pie(sponsor_types.values, labels=sponsor_types.index, 
                autopct='%1.1f%%', colors=['#2E86AB', '#F18F01', '#06BA63', '#A23B72'],
                startangle=90)
-axes[2, 1].set_title('Sponsor Category Distribution', fontsize=14, fontweight='bold')
+axes[2, 1].set_title('Sponsor Types', fontsize=14, fontweight='bold')
 
-plt.suptitle('2025 Cell Therapy Clinical Trials: Comprehensive Analysis',
+plt.suptitle('2025 Cell Therapy Trials Analysis',
              fontsize=18, fontweight='bold', y=0.995)
 plt.tight_layout()
 plt.savefig('cell_therapy_analysis_2025.png', dpi=300, bbox_inches='tight')
-print("\n✓ Main visualization saved: cell_therapy_analysis_2025.png")
+print("\nSaved: cell_therapy_analysis_2025.png")
 
-# Additional focused visualization: Intervention type breakdown
-fig2, ax = plt.subplots(figsize=(14, 8))
-intervention_data = pd.DataFrame(intervention_counts.most_common(15), 
-                                  columns=['Type', 'Count'])
-ax.bar(intervention_data['Type'], intervention_data['Count'], color='#2E86AB')
-ax.set_title('Intervention Type Distribution (Top 15)', fontsize=16, fontweight='bold')
-ax.set_xlabel('Intervention Type', fontsize=12)
-ax.set_ylabel('Number of Trials', fontsize=12)
-ax.tick_params(axis='x', rotation=45)
-ax.grid(True, alpha=0.3, axis='y')
+# Intervention breakdown chart
+fig2, ax = plt.subplots(figsize=(14, 10))
+
+sorted_interventions = dict(sorted(intervention_counts.items(), 
+                                  key=lambda x: x[1], reverse=True)[:15])
+
+ax.barh(range(len(sorted_interventions)), list(sorted_interventions.values()),
+        color='#F18F01', edgecolor='black', linewidth=0.8)
+ax.set_yticks(range(len(sorted_interventions)))
+ax.set_yticklabels(list(sorted_interventions.keys()), fontsize=11)
+ax.set_xlabel('Number of Trials', fontsize=12, fontweight='bold')
+ax.set_title('2025 Cell Therapy: Intervention Types', 
+             fontsize=15, fontweight='bold', pad=20)
+ax.invert_yaxis()
+ax.grid(True, alpha=0.3, axis='x')
+
+for i, v in enumerate(sorted_interventions.values()):
+    ax.text(v + 0.5, i, str(v), va='center', fontweight='bold', fontsize=10)
+
 plt.tight_layout()
 plt.savefig('intervention_types_2025.png', dpi=300, bbox_inches='tight')
-print("✓ Intervention types visualization saved: intervention_types_2025.png")
+print("Saved: intervention_types_2025.png")
 
-# Key Insights
-print("\n" + "=" * 70)
-print("KEY INSIGHTS")
-print("=" * 70)
+# Summary CSV
+summary_data = {
+    'Metric': ['Total Trials', 'Interventional', 'Observational',
+               'Drug-based', 'Device-based', 'Biological',
+               'Industry Sponsors', 'Academic Sponsors'],
+    'Count': [
+        len(data),
+        len(data[data['Study Type'] == 'INTERVENTIONAL']),
+        len(data[data['Study Type'] == 'OBSERVATIONAL']),
+        drug_trials,
+        device_trials,
+        biological_trials,
+        len(data[data['sponsor_type'] == 'Industry']),
+        len(data[data['sponsor_type'] == 'Academic'])
+    ]
+}
 
-print(f"\n1. TRIAL OVERVIEW")
-print(f"   • Total completed trials: {len(df)}")
-print(f"   • Interventional trials: {study_type_counts.get('INTERVENTIONAL', 0)}")
-print(f"   • Observational trials: {study_type_counts.get('OBSERVATIONAL', 0)}")
+summary = pd.DataFrame(summary_data)
+summary.to_csv('trial_summary_2025.csv', index=False)
+print("Saved: trial_summary_2025.csv")
 
-print(f"\n2. INTERVENTION LANDSCAPE")
-print(f"   • Drug-based trials: {drug_trials} ({drug_trials/len(df)*100:.1f}%)")
-print(f"   • Device-based trials: {device_trials} ({device_trials/len(df)*100:.1f}%)")
-print(f"   • Biological interventions: {biological_trials} ({biological_trials/len(df)*100:.1f}%)")
-
-print(f"\n3. TOP CONDITIONS")
-for i, (condition, count) in enumerate(condition_counts[:5], 1):
-    print(f"   {i}. {condition}: {count} trials")
-
-print(f"\n4. LEADING SPONSORS")
-for i, (sponsor, count) in enumerate(sponsor_counts.head(5).items(), 1):
-    print(f"   {i}. {sponsor}: {count} trials")
-
-print(f"\n5. SPONSOR DIVERSITY")
-for sponsor_type, count in sponsor_type_counts.items():
-    pct = count/len(df)*100
-    print(f"   • {sponsor_type}: {count} trials ({pct:.1f}%)")
-
-# Export summary data
-summary_df = pd.DataFrame({
-    'Metric': ['Total Trials', 'Interventional', 'Observational', 
-               'Drug-based', 'Device-based', 'Biological', 
-               'Unique Sponsors', 'Unique Conditions'],
-    'Value': [len(df), 
-              study_type_counts.get('INTERVENTIONAL', 0),
-              study_type_counts.get('OBSERVATIONAL', 0),
-              drug_trials, device_trials, biological_trials,
-              df['Sponsor'].nunique(),
-              len(all_conditions)]
-})
-
-summary_df.to_csv('trial_summary_2025.csv', index=False)
-print("\n✓ Summary data exported: trial_summary_2025.csv")
-
-print("\n" + "=" * 70)
+print("\n" + "="*70)
 print("ANALYSIS COMPLETE")
-print("=" * 70)
-print("\nGenerated files:")
-print("  • cell_therapy_analysis_2025.png (main dashboard)")
-print("  • intervention_types_2025.png (detailed intervention breakdown)")
-print("  • trial_summary_2025.csv (summary statistics)")
+print("="*70)
+print(f"\nTotal trials analyzed: {len(data)}")
+print(f"Drug-based: {drug_trials} ({100*drug_trials/len(data):.1f}%)")
+print(f"Device-based: {device_trials} ({100*device_trials/len(data):.1f}%)")
+print(f"Biological: {biological_trials} ({100*biological_trials/len(data):.1f}%)")
+print(f"\nIndustry: {len(data[data['sponsor_type'] == 'Industry'])} trials")
+print(f"Academic: {len(data[data['sponsor_type'] == 'Academic'])} trials")
+
